@@ -1,4 +1,6 @@
 from flask import Flask, render_template, request, jsonify
+import secrets
+print(secrets.token_hex(24))
 
 app = Flask(__name__)
 
