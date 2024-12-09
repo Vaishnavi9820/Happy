@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Happy Birthday Greeting</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f8ff;
+      text-align: center;
+      padding: 50px;
+    }
+    .container {
+      background-color: #ffffff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      width: 300px;
+      margin: 0 auto;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    input[type="text"] {
+      padding: 10px;
+      width: 80%;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    #giftSection {
+      display: none;
+      margin-top: 20px;
+    }
+    #noGiftPopup {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container" id="greetingForm">
+    <h2>Enter Your Name</h2>
+    <input type="text" id="userName" placeholder="Your Name">
+    <button onclick="submitName()">Submit</button>
+  </div>
+
+  <div class="container" id="birthdayGreeting" style="display: none;">
+    <h2>Happy Birthday <span id="nameDisplay"></span>!</h2>
+    <p>Do you want a birthday gift?</p>
+    <button onclick="chooseGift('yes')">Yes</button>
+    <button onclick="chooseGift('no')">No</button>
+  </div>
+
+  <div class="container" id="giftSection">
+    <h3>What would you like as a gift?</h3>
+    <input type="text" id="giftInput" placeholder="Enter your gift idea">
+    <button onclick="submitGift()">Submit</button>
+  </div>
+
+  <div id="noGiftPopup">
+    <p style="color: red; font-weight: bold;">Sorry, you can't select "No" as I want to gift you something! Please select "Yes".</p>
+    <button onclick="closePopup()">Close</button>
+  </div>
+
+  <script>
+    function submitName() {
+      const name = document.getElementById("userName").value;
+      if (name.trim() !== "") {
+        fetch('/submit_name', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: new URLSearchParams({
+            'userName': name
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === 'success') {
+            document.getElementById("greetingForm").style.display = "none";
+            document.getElementById("birthdayGreeting").style.display = "block";
+            document.getElementById("nameDisplay").textContent = name;
+          } else {
+            alert(data.message);
+          }
+        });
+      } else {
+        alert("Please enter your name!");
+      }
+    }
+
+    function chooseGift(response) {
+      fetch('/choose_gift', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          'choice': response
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'success') {
+          document.getElementById("birthdayGreeting").style.display = "none";
+          document.getElementById("giftSection").style.display = "block";
+        } else {
+          document.getElementById("birthdayGreeting").style.display = "none";
+          document.getElementById("noGiftPopup").style.display = "block";
+        }
+      });
+    }
+
+    function submitGift() {
+      const gift = document.getElementById("giftInput").value;
+      if (gift.trim() !== "") {
+        fetch('/submit_gift', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: new URLSearchParams({
+            'gift': gift
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          alert(data.message);
+          resetPage();
+        });
+      } else {
+        alert("Please enter a gift idea.");
+      }
+    }
+
+    function closePopup() {
+      document.getElementById("noGiftPopup").style.display = "none";
+      document.getElementById("birthdayGreeting").style.display = "block";
+    }
+
+    function resetPage() {
+      document.getElementById("greetingForm").style.display = "block";
+      document.getElementById("birthdayGreeting").style.display = "none";
+      document.getElementById("giftSection").style.display = "none";
+      document.getElementById("noGiftPopup").style.display = "none";
+      document.getElementById("userName").value = "";
+      document.getElementById("giftInput").value = "";
+    }
+  </script>
+
+</body>
+</html>
